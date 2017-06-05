@@ -15,6 +15,9 @@ container/server)
 2 - there are no detailed requirements, use common sense.
 Please put your work on github or bitbucket.
 
+# Screenshots
+see https://github.com/xartifex/moneytransfers/wiki
+
 # Requirements 
 1. Java 8
 2. Maven 3
