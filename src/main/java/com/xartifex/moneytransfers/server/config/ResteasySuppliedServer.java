@@ -36,7 +36,9 @@ public class ResteasySuppliedServer extends AbstractVerticle {
             router.route("/rest/*").handler(r -> {
                 new VertxRequestHandler(vertx, deployment).handle(r.request());
             });
-            router.route().handler(StaticHandler.create());
+            StaticHandler staticHandler = StaticHandler.create();
+            staticHandler.setDefaultContentEncoding("UTF-8");
+            router.route().handler(staticHandler);
 
             server.requestHandler(router::accept).listen(8080, result ->
             {
