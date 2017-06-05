@@ -1,0 +1,6 @@
+*.iml
+.idea/**
+localnotes.txt
+.vertx/
+target/
+.idea/

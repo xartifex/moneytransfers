@@ -1,0 +1,136 @@
+#%RAML 1.0
+title: MoneyTransfers
+version: v1
+baseUri: http://localhost:8080/rest/v1
+types:
+  SendOrder:
+    type: object
+    properties:
+      senderId:
+        type: number
+      receiverId:
+        type: number
+      amount:
+        type: string
+      statusCode:
+        type: integer
+        required: false
+      id:
+        type: string
+        required: false
+      status:
+        type: string
+        required: false
+      date:
+        type: integer
+        required: false
+  InvalidSendOrder:
+    type: object
+    properties:
+      statusCode:
+        type: integer
+        required: true
+      senderId:
+        type: number
+        required: true
+      receiverId:
+        type: number
+        required: true
+      amount:
+        type: string
+        required: true
+      error:
+        type: string
+        required: true
+  ServerError:
+    type: object
+    properties:
+      statusCode:
+        type: integer
+        required: true
+      error:
+        type: string
+        required: true
+  AccountInfo:
+    type: object
+    properties:
+      statusCode:
+        type: integer
+        required: true
+      id:
+        type: integer
+        required: true
+      name:
+        type: string
+        required: true
+      balance:
+        type: string
+        required: true
+      time:
+        type: integer
+        required: true
+
+/send:
+  post:
+    body:
+      application/json:
+        type: SendOrder
+        example:
+          {
+            "senderId": 1,
+            "receiverId": 2,
+            "amount": "10.5"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            type: SendOrder
+            example:
+              {
+                "statusCode": 200,
+                "id": "b6982709-a6c1-40de-964e-2f1e1ea93548",
+                "senderId": 2,
+                "receiverId": 3,
+                "amount": "5.05",
+                "status": "COMPLETED",
+                "date": 1496580556288
+              }
+      400:
+        body:
+          application/json:
+            type: InvalidSendOrder
+            example:
+              {
+                "statusCode":400,
+                "senderId":1,
+                "receiverId":1,
+                "amount":"5.05",
+                "error":"Cannot send money to the same account: 1"
+              }
+
+
+/balance/{accountId}:
+  get:
+    responses:
+      200:
+       body:
+         application/json:
+           type: AccountInfo
+           example:
+             {
+               "statusCode": 200,
+               "id": 20,
+               "name": "19",
+               "balance": "190",
+               "time": 1496582024000
+             }
+      404:
+        body:
+          application/json:
+            type: ServerError
+            example:
+              {
+                "statusCode":404,
+                "error":  "Account not found!"
+              }
