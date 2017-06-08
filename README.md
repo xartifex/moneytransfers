@@ -31,12 +31,15 @@ see https://github.com/xartifex/moneytransfers/wiki
 5. java -jar moneytransfers-1.0-SNAPSHOT.jar
 6. open your favorite browser
 7. go to http://localhost:8080/?raml=api.raml
+
 ER=there will be UI for trying out MoneyTransfers API
+
 8. in order to stop the server just press _Ctrl+C_ in the console window where step 5 was performed
 
-#Performance testing
+# Performance testing
 after step 6 of _Usage_ section execute the following:
 mvn jmeter:jmeter
+
 ER=there will be two main things to observe
 * summary in console like this
 ```
@@ -47,8 +50,8 @@ ER=there will be two main things to observe
  [INFO] summary =   5562 in 00:01:03 =   88,6/s Avg:  1093 Min:     5 Max:  6391 Err:     0 (0,00%)
 ```
 * result file target/jmeter/results/jmeterTests.jtl, which can be opened by JMeter or used by special plugins to plot graphs:
-see this graph as an example of what can be generated from jtl
+see _jmeter graph: response time_ graph on https://github.com/xartifex/moneytransfers/wiki as an example of what can be generated from jtl
 
 The test is configured to run for ~1 minute with around ~100 requests per second. 
-You can open src/test/jmeter/jmeterTests.jmx in JMeter for detailed overview and configuration of performance tests.
+You can open [jmeterTests.jmx](src/test/jmeter/jmeterTests.jmx) in JMeter for detailed overview and configuration of performance tests.
  
