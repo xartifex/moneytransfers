@@ -40,7 +40,7 @@ ER=there will be UI for trying out MoneyTransfers API
 after step 6 of _Usage_ section execute the following:
 mvn jmeter:jmeter
 
-ER=there will be two main things to observe
+ER=there will be two main things to observe:
 * summary in console like this
 ```
  [INFO] summary +    289 in 00:00:06 =   50,3/s Avg:  1261 Min:   373 Max:  2239 Err:     0 (0,00%) Active: 100 Started: 100 Finished: 0
