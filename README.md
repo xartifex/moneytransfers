@@ -37,7 +37,7 @@ ER=there will be UI for trying out MoneyTransfers API
 8. in order to stop the server just press _Ctrl+C_ in the console window where step 5 was performed
 
 # Performance testing
-after step 6 of _Usage_ section execute the following:
+after step 6 of _Usage_ section execute the following in a separete terminal window in _moneytransfers_ folder:
 mvn jmeter:jmeter
 
 ER=there will be two main things to observe:
