@@ -1,8 +1,6 @@
 package com.xartifex.moneytransfers.server;
 
-import com.xartifex.moneytransfers.server.model.AccountInfo;
-import com.xartifex.moneytransfers.server.model.SendOrder;
-import com.xartifex.moneytransfers.server.model.SendOrderStatus;
+import com.xartifex.moneytransfers.server.model.*;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.vertx.core.Vertx;
@@ -39,7 +37,7 @@ public class APITest {
     }
 
     @Test
-    public void checkWeCanTransferMoney() {
+    public void checkThatWeCanTransferMoney() {
         SendOrder sendOrder = given()
                 .body(new SendOrder(1L, 2L, "1.05")).contentType(ContentType.JSON).request()
                 .post("/send").thenReturn().as(SendOrder.class);
@@ -54,7 +52,59 @@ public class APITest {
     }
 
     @Test
-    public void checkWeCanGetAccountInfoWithBalance() {
+    public void checkThatWeCannotSendNegativeAmount() {
+        InvalidSendOrder invalidSendOrder = given()
+                .body(new SendOrder(1L, 2L, "-1")).contentType(ContentType.JSON).request()
+                .post("/send").thenReturn().as(InvalidSendOrder.class);
+        assertThat(invalidSendOrder.getStatusCode()).isEqualTo(400);
+        assertThat(invalidSendOrder.getError()).contains("Amount must be positive");
+    }
+
+    @Test
+    public void checkThatWeCannotSendToOurselves() {
+        InvalidSendOrder invalidSendOrder = given()
+                .body(new SendOrder(1L, 1L, "1")).contentType(ContentType.JSON).request()
+                .post("/send").thenReturn().as(InvalidSendOrder.class);
+        assertThat(invalidSendOrder.getStatusCode()).isEqualTo(400);
+        assertThat(invalidSendOrder.getError()).contains("Cannot send money to the same account");
+    }
+
+    @Test
+    public void checkThatWeCannotSendFromNonExistingAccount() {
+        InvalidSendOrder invalidSendOrder = given()
+                .body(new SendOrder(999999L, 1L, "1")).contentType(ContentType.JSON).request()
+                .post("/send").thenReturn().as(InvalidSendOrder.class);
+        assertThat(invalidSendOrder.getStatusCode()).isEqualTo(400);
+        assertThat(invalidSendOrder.getError()).contains("The following sender is not found");
+    }
+
+    @Test
+    public void checkThatWeCannotSendToNonExistingAccount() {
+        InvalidSendOrder invalidSendOrder = given()
+                .body(new SendOrder(1L, 999999L, "1")).contentType(ContentType.JSON).request()
+                .post("/send").thenReturn().as(InvalidSendOrder.class);
+        assertThat(invalidSendOrder.getStatusCode()).isEqualTo(400);
+        assertThat(invalidSendOrder.getError()).contains("The following receiver is not found");
+    }
+
+    @Test
+    public void checkThatWeCannotSendMoreThanWeHave() {
+        InvalidSendOrder invalidSendOrder = given()
+                .body(new SendOrder(1L, 2L, "999999999999")).contentType(ContentType.JSON).request()
+                .post("/send").thenReturn().as(InvalidSendOrder.class);
+        assertThat(invalidSendOrder.getStatusCode()).isEqualTo(400);
+        assertThat(invalidSendOrder.getError()).contains("Sender has insufficient funds to send the following amount");
+    }
+    
+    @Test
+    public void checkThatWeGet400WithIllegalRequest() {
+        given().body("{\"someIllegal\":\"request\"}").contentType(ContentType.JSON).post("/send").then()
+                .assertThat()
+                .statusCode(400);
+    }
+
+    @Test
+    public void checkThatWeCanGetAccountInfoWithBalance() {
         AccountInfo accountInfo = get("/balance/20").thenReturn().as(AccountInfo.class);
         assertThat(accountInfo.getId()).isEqualTo(20);
         assertThat(accountInfo.getName()).isEqualTo("20");
@@ -62,5 +112,17 @@ public class APITest {
         assertThat(accountInfo.getBalance()).isEqualTo("200");
     }
 
-    //todo: write more tests, for instance to test for erroneous inputs
+    @Test
+    public void checkThatWeGet404ForNonExisitngAccount() {
+        ServerError serverError = get("/balance/99999").thenReturn().as(ServerError.class);
+        assertThat(serverError.getStatusCode()).isEqualTo(404);
+        assertThat(serverError.getError()).contains("Account not found");
+    }
+
+    @Test
+    public void checkThatWeGet404ForNonExistingResource() {
+        get("/someNonExistingResource").then()
+                .assertThat()
+                .statusCode(404);
+    }
 }

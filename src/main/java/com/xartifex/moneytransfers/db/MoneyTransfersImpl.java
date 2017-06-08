@@ -19,26 +19,26 @@ public class MoneyTransfersImpl implements MoneyTransfers, AutoCloseable {
 
     private final Logger logger = LoggerFactory.getLogger(MoneyTransfersImpl.class);
 
-    private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
-
-    public MoneyTransfersImpl() {
-        entityManagerFactory = Persistence.createEntityManagerFactory(MAIN_PERSISTENCE_UNIT_NAME);
-        entityManager = entityManagerFactory.createEntityManager();
+    private EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory(MAIN_PERSISTENCE_UNIT_NAME);
+    private ThreadLocal<EntityManager> entityManagerTL = ThreadLocal.withInitial(()
+            -> entityManagerFactory.createEntityManager());
+    
+    private EntityManager getEntityManager()
+    {
+        return entityManagerTL.get();
     }
 
     public MoneyTransfersImpl(Collection<Account> accounts) {
-        this();
-        entityManager.getTransaction().begin();
+        getEntityManager().getTransaction().begin();
         int i = 0;
         for (Account account : accounts) {
-            entityManager.persist(account);
+            getEntityManager().persist(account);
             if ((i++ % 10000) == 0) {
-                entityManager.flush();
-                entityManager.clear();
+                getEntityManager().flush();
+                getEntityManager().clear();
             }
         }
-        entityManager.getTransaction().commit();
+        getEntityManager().getTransaction().commit();
     }
 
     public Transaction send(long senderId, long receiverId, BigDecimal amount) throws MoneyTransfersException {
@@ -49,14 +49,14 @@ public class MoneyTransfersImpl implements MoneyTransfers, AutoCloseable {
             if (senderId == receiverId) {
                 throw new SameUserException("Cannot send money to the same account: " + senderId);
             }
-            entityManager.getTransaction().begin();
-            Account sender = entityManager.find(Account.class, senderId);
+            getEntityManager().getTransaction().begin();
+            Account sender = getEntityManager().find(Account.class, senderId);
             if (sender == null) {
                 throw new AccountNotFoundException("The following sender is not found: " + senderId);
             }
-            Account receiver = entityManager.find(Account.class, receiverId);
+            Account receiver = getEntityManager().find(Account.class, receiverId);
             if (receiver == null) {
-                throw new AccountNotFoundException("The following receiver is not found: " + receiver);
+                throw new AccountNotFoundException("The following receiver is not found: " + receiverId);
             }
             BigDecimal senderBalance = sender.getBalance();
             BigDecimal subtractedBalance = senderBalance.subtract(amount);
@@ -69,27 +69,27 @@ public class MoneyTransfersImpl implements MoneyTransfers, AutoCloseable {
             transaction.setSender(sender);
             transaction.setReceiver(receiver);
             transaction.setAmount(amount);
-            entityManager.persist(transaction);
-            entityManager.getTransaction().commit();
+            getEntityManager().persist(transaction);
+            getEntityManager().getTransaction().commit();
             logger.debug("Account {} sent amount of {} to Account {}. Transaction id {}. Date {}.",
                     senderId, amount, receiverId, transaction.getId(), transaction.getDate());
             return transaction;
         } catch (MoneyTransfersException e) {
             logger.error("Invalid sending conditions", e);
-            if (entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
+            if (getEntityManager().getTransaction().isActive()) {
+                getEntityManager().getTransaction().rollback();
             }
             throw e;
         } catch (Throwable unexpected) {
             logger.error("Unable to send money", unexpected);
-            entityManager.getTransaction().rollback();
+            getEntityManager().getTransaction().rollback();
             throw new MoneyTransfersException("Unable to send money", unexpected);
         }
     }
 
     @Override
     public Account get(long accountId) throws AccountNotFoundException {
-        Account account = entityManager.find(Account.class, accountId);
+        Account account = getEntityManager().find(Account.class, accountId);
         if (account == null) {
             throw new AccountNotFoundException("Account with the following id doesn't exist: " + accountId);
         }
@@ -97,8 +97,9 @@ public class MoneyTransfersImpl implements MoneyTransfers, AutoCloseable {
     }
 
     public void close() throws Exception {
-        entityManager.close();
+        getEntityManager().close();
         entityManagerFactory.close();
+        entityManagerTL.remove();
     }
 }
 

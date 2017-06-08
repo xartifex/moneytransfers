@@ -7,6 +7,7 @@ package com.xartifex.moneytransfers.server;
 
 import com.xartifex.moneytransfers.server.config.ResteasySuppliedServer;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
@@ -24,7 +25,9 @@ public class Main extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> future) throws Exception {
-        vertx.deployVerticle(DBLayerProcessing.class.getName(), res -> {
+        DeploymentOptions deploymentOptions = new DeploymentOptions()
+                .setWorker(true).setMultiThreaded(true);
+        vertx.deployVerticle(DBLayerProcessing.class.getName(), deploymentOptions, res -> {
             if (res.succeeded()) {
                 future.complete();
             } else {

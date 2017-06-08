@@ -8,6 +8,8 @@ package com.xartifex.moneytransfers.server;
 import com.xartifex.moneytransfers.server.model.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
@@ -19,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 @Path(Const.REST_PREFIX)
 public class APILayerProcessing {
+
+    private final Logger logger = LoggerFactory.getLogger(APILayerProcessing.class);
 
     @POST
     @Path("/send")
@@ -51,6 +55,7 @@ public class APILayerProcessing {
                                     .build());
                         }
                     } else {
+                        logger.error("Internal server error occurred during balance send request: ", msg.cause());
                         asyncResponse.resume(Response.status(Response.Status.INTERNAL_SERVER_ERROR).
                                 entity(new ServerError("Internal server error occurred during balance send request!",
                                         Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))
@@ -86,6 +91,7 @@ public class APILayerProcessing {
                                     .build());
                         }
                     } else {
+                        logger.error("Internal server error occurred during balance request: ", msg.cause());
                         asyncResponse.resume(Response.status(Response.Status.INTERNAL_SERVER_ERROR).
                                 entity(new ServerError("Internal server error occurred during balance request!",
                                         Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))
