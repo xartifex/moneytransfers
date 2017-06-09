@@ -19,8 +19,9 @@ public class MoneyTransfersImpl implements MoneyTransfers, AutoCloseable {
 
     private final Logger logger = LoggerFactory.getLogger(MoneyTransfersImpl.class);
 
-    private EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory(MAIN_PERSISTENCE_UNIT_NAME);
-    private ThreadLocal<EntityManager> entityManagerTL = ThreadLocal.withInitial(()
+    private final EntityManagerFactory entityManagerFactory = Persistence.
+            createEntityManagerFactory(MAIN_PERSISTENCE_UNIT_NAME);
+    private final ThreadLocal<EntityManager> entityManagerTL = ThreadLocal.withInitial(()
             -> entityManagerFactory.createEntityManager());
     
     private EntityManager getEntityManager()
