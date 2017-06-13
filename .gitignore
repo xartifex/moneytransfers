@@ -4,4 +4,5 @@ localnotes.txt
 .vertx/
 target/
 .idea/
-notinstream
+notinstream/
+logs/

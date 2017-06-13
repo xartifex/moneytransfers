@@ -10,6 +10,6 @@ import java.math.BigDecimal;
  * since: 01.06.2017
  */
 public interface MoneyTransfers extends AutoCloseable{
-    Transaction send(long senderId, long receiverId, BigDecimal amount) throws MoneyTransfersException;
+    Transaction send(Long senderId, Long receiverId, BigDecimal amount) throws MoneyTransfersException;
     Account get(long accountId) throws AccountNotFoundException;
 }

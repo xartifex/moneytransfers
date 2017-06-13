@@ -6,9 +6,11 @@
         <class>com.xartifex.moneytransfers.db.Account</class>
         <class>com.xartifex.moneytransfers.db.Transaction</class>
         <properties>
+            <property name="hibernate.connection.isolation" value="2"/>
             <property name="connection.driver_class" value="org.h2.Driver"/>
             <property name="hibernate.connection.url" value="jdbc:h2:mem:test"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="connection.pool_size" value="20"/>
             <!--no need to drop, because in memory mode-->
             <property name="hibernate.hbm2ddl.auto" value="create"/>
             <property name="hibernate.show_sql" value="false" />

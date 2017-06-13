@@ -1,6 +1,5 @@
 package com.xartifex.moneytransfers.db;
 
-import org.hibernate.annotations.GenericGenerator;
 import java.math.BigDecimal;
 import javax.persistence.*;
 
@@ -11,9 +10,21 @@ import javax.persistence.*;
 @Entity
 @Table( name = "ACCOUNTS" )
 public class Account {
+    public static final int SCALE = 7;
+
     private Long id;
     private String name;
     private BigDecimal balance;
+    private Long version;
+
+    @Version
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -35,7 +46,7 @@ public class Account {
         this.name = name;
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition="DECIMAL(20,7)")
     public BigDecimal getBalance() {
         return balance;
     }
